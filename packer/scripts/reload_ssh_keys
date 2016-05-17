@@ -1,0 +1,8 @@
+users=(kevinprince)
+
+for i in ${users[@]}; do
+  curl "https://github.com/${i}.keys" >> /home/ubuntu/.ssh/new_keys
+done
+rm /home/ubuntu/.ssh/new_keys
+mv /home/ubuntu/.ssh/new_keys /home/ubuntu/.ssh/authorized_keys
+chmod 600 /home/ubuntu/.ssh/authorized_keys

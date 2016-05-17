@@ -2,26 +2,44 @@
   "variables": {
   },
   "builders": [{
-    "type": "amazon-ebs",
-    "region": "us-east-1",
-    "source_ami": "ami-fce3c696",
-    "instance_type": "t2.micro",
-    "ssh_username": "ubuntu",
-    "ami_name": "packer-example {{timestamp}}"
+    "type":           "amazon-ebs",
+    "region":         "us-east-1",
+    "source_ami":     "ami-fce3c696",
+    "instance_type":  "c4.large",
+    "ssh_username":   "ubuntu",
+    "ami_name":       "my-io-{{timestamp}}"
   }],
   "provisioners": [{
     "type": "shell",
     "inline": [
       "sleep 30",
-      "sudo apt-get update",
-      "sudo apt-get install software-properties-common",
-      "sudo apt-add-repository ppa:ansible/ansible",
-      "sudo apt-get update",
-      "sudo apt-get install ansible"
+      "sudo apt-get update && sudo apt-get -y upgrade",
+      "sudo apt-get -y install unattended-upgrades",
+      "curl https://get.docker.com | bash",
+      "sudo usermod -aG docker ubuntu"
     ]
   },
   {
-    "type": "ansible-local",
-    "playbook_file": "docker.yml"
+    "type":         "file",
+    "source":       "scripts/",
+    "destination":  "/tmp/scripts"
+  },
+  {
+    "type": "shell",
+    "inline": [
+      "sudo cp /tmp/scripts/reload_ssh_keys /usr/local/bin/reload_ssh_keys",
+      "sudo chmod -R +x /usr/local/bin/reload_ssh_keys"
+    ]
+  },
+  {
+    "type":         "file",
+    "source":       "crontab",
+    "destination":  "/tmp/crontab"
+  },
+  {
+    "type": "shell",
+    "inline": [
+      "sudo crontab /tmp/crontab"
+    ]
   }]
 }
